@@ -1073,7 +1073,9 @@ var Lightbox = function (_Component) {
 			// preload current image
 			if (this.props.currentImage !== nextProps.currentImage || !this.props.isOpen && nextProps.isOpen) {
 				var img = this.preloadImage(nextProps.currentImage, this.handleImageLoaded);
-				this.setState({ imageLoaded: img.complete });
+				if (img) {
+					this.setState({ imageLoaded: img.complete });
+				}
 			}
 
 			// add/remove event listeners
@@ -1103,17 +1105,19 @@ var Lightbox = function (_Component) {
 
 			if (!data) return;
 
-			var img = new Image();
-			var sourceSet = normalizeSourceSet(data);
+			if (data.src) {
+				var img = new Image();
+				var sourceSet = normalizeSourceSet(data);
 
-			// TODO: add error handling for missing images
-			img.onerror = onload;
-			img.onload = onload;
-			img.src = data.src;
+				// TODO: add error handling for missing images
+				img.onerror = onload;
+				img.onload = onload;
+				img.src = data.src;
 
-			if (sourceSet) img.srcset = sourceSet;
+				if (sourceSet) img.srcset = sourceSet;
 
-			return img;
+				return img;
+			}
 		}
 	}, {
 		key: 'gotoNext',
@@ -1148,6 +1152,11 @@ var Lightbox = function (_Component) {
 			}
 
 			this.props.onClickPrev();
+		}
+	}, {
+		key: 'getYoutubeLink',
+		value: function getYoutubeLink(id) {
+			return '//www.youtube.com/embed/' + id + '?fs=0&modestbranding=1&rel=0&showinfo=0';
 		}
 	}, {
 		key: 'closeBackdrop',
@@ -1256,51 +1265,85 @@ var Lightbox = function (_Component) {
 			);
 		}
 	}, {
-		key: 'renderImages',
-		value: function renderImages() {
+		key: 'renderImage',
+		value: function renderImage(image) {
+			var imageLoaded = this.state.imageLoaded;
 			var _props3 = this.props,
-			    currentImage = _props3.currentImage,
-			    images = _props3.images,
 			    onClickImage = _props3.onClickImage,
 			    showThumbnails = _props3.showThumbnails;
-			var imageLoaded = this.state.imageLoaded;
 
 
-			if (!images || !images.length) return null;
-
-			var image = images[currentImage];
 			var sourceSet = normalizeSourceSet(image);
 			var sizes = sourceSet ? '100vw' : null;
 
 			var thumbnailsSize = showThumbnails ? this.theme.thumbnail.size : 0;
 			var heightOffset = this.theme.header.height + this.theme.footer.height + thumbnailsSize + this.theme.container.gutter.vertical + 'px';
 
+			return React__default.createElement('img', {
+				className: aphrodite.css(this.classes.image, imageLoaded && this.classes.imageLoaded),
+				onClick: onClickImage,
+				sizes: sizes,
+				alt: image.alt,
+				src: image.src,
+				srcSet: sourceSet,
+				style: {
+					cursor: onClickImage ? 'pointer' : 'auto',
+					maxHeight: 'calc(100vh - ' + heightOffset + ')'
+				}
+			});
+		}
+	}, {
+		key: 'renderVideo',
+		value: function renderVideo(image) {
+			var imageLoaded = this.state.imageLoaded;
+			var _props4 = this.props,
+			    onClickImage = _props4.onClickImage,
+			    showThumbnails = _props4.showThumbnails;
+
+
+			var thumbnailsSize = showThumbnails ? this.theme.thumbnail.size : 0;
+			var heightOffset = this.theme.header.height + this.theme.footer.height + thumbnailsSize + this.theme.container.gutter.vertical + 'px';
+
+			return React__default.createElement('iframe', {
+				className: aphrodite.css(this.classes.video, imageLoaded && this.classes.videoLoaded),
+				src: this.getYoutubeLink(image.youtubeVideoId),
+				frameBorder: '0',
+				onLoad: this.handleImageLoaded,
+				style: {
+					cursor: onClickImage ? 'pointer' : 'auto',
+					height: 'calc(100vh - ' + heightOffset + ')',
+					width: 'calc((100vh - ' + heightOffset + ') * 16 / 9)'
+				}
+			});
+		}
+	}, {
+		key: 'renderImages',
+		value: function renderImages() {
+			var _props5 = this.props,
+			    currentImage = _props5.currentImage,
+			    images = _props5.images;
+
+
+			if (!images || !images.length) return null;
+
+			var image = images[currentImage];
+
 			return React__default.createElement(
 				'figure',
 				{ className: aphrodite.css(this.classes.figure) },
-				React__default.createElement('img', {
-					className: aphrodite.css(this.classes.image, imageLoaded && this.classes.imageLoaded),
-					onClick: onClickImage,
-					sizes: sizes,
-					alt: image.alt,
-					src: image.src,
-					srcSet: sourceSet,
-					style: {
-						cursor: onClickImage ? 'pointer' : 'auto',
-						maxHeight: 'calc(100vh - ' + heightOffset + ')'
-					}
-				})
+				image.src && this.renderImage(image),
+				image.youtubeVideoId && this.renderVideo(image)
 			);
 		}
 	}, {
 		key: 'renderThumbnails',
 		value: function renderThumbnails() {
-			var _props4 = this.props,
-			    images = _props4.images,
-			    currentImage = _props4.currentImage,
-			    onClickThumbnail = _props4.onClickThumbnail,
-			    showThumbnails = _props4.showThumbnails,
-			    thumbnailOffset = _props4.thumbnailOffset;
+			var _props6 = this.props,
+			    images = _props6.images,
+			    currentImage = _props6.currentImage,
+			    onClickThumbnail = _props6.onClickThumbnail,
+			    showThumbnails = _props6.showThumbnails,
+			    thumbnailOffset = _props6.thumbnailOffset;
 
 
 			if (!showThumbnails) return;
@@ -1315,11 +1358,11 @@ var Lightbox = function (_Component) {
 	}, {
 		key: 'renderHeader',
 		value: function renderHeader() {
-			var _props5 = this.props,
-			    closeButtonTitle = _props5.closeButtonTitle,
-			    customControls = _props5.customControls,
-			    onClose = _props5.onClose,
-			    showCloseButton = _props5.showCloseButton;
+			var _props7 = this.props,
+			    closeButtonTitle = _props7.closeButtonTitle,
+			    customControls = _props7.customControls,
+			    onClose = _props7.onClose,
+			    showCloseButton = _props7.showCloseButton;
 
 
 			return React__default.createElement(Header, {
@@ -1332,11 +1375,11 @@ var Lightbox = function (_Component) {
 	}, {
 		key: 'renderFooter',
 		value: function renderFooter() {
-			var _props6 = this.props,
-			    currentImage = _props6.currentImage,
-			    images = _props6.images,
-			    imageCountSeparator = _props6.imageCountSeparator,
-			    showImageCount = _props6.showImageCount;
+			var _props8 = this.props,
+			    currentImage = _props8.currentImage,
+			    images = _props8.images,
+			    imageCountSeparator = _props8.imageCountSeparator,
+			    showImageCount = _props8.showImageCount;
 
 
 			if (!images || !images.length) return null;
@@ -1352,10 +1395,10 @@ var Lightbox = function (_Component) {
 	}, {
 		key: 'renderSpinner',
 		value: function renderSpinner() {
-			var _props7 = this.props,
-			    spinner = _props7.spinner,
-			    spinnerColor = _props7.spinnerColor,
-			    spinnerSize = _props7.spinnerSize;
+			var _props9 = this.props,
+			    spinner = _props9.spinner,
+			    spinnerColor = _props9.spinnerColor,
+			    spinnerSize = _props9.spinnerSize;
 			var imageLoaded = this.state.imageLoaded;
 
 			var Spinner$$1 = spinner;
@@ -1390,7 +1433,8 @@ Lightbox.propTypes = {
 	enableKeyboardInput: PropTypes.bool,
 	imageCountSeparator: PropTypes.string,
 	images: PropTypes.arrayOf(PropTypes.shape({
-		src: PropTypes.string.isRequired,
+		src: PropTypes.string,
+		youtubeVideoId: PropTypes.string,
 		srcSet: PropTypes.array,
 		caption: PropTypes.oneOfType([PropTypes.string, PropTypes.element]),
 		thumbnail: PropTypes.string
@@ -1444,6 +1488,18 @@ var defaultStyles = {
 	figure: {
 		margin: 0 // remove browser default
 	},
+	video: {
+		display: 'block',
+		maxWidth: '100%',
+		maxHeight: 'calc(100vw * 9 / 16)',
+
+		// opacity animation on video load
+		opacity: 0,
+		transition: 'opacity 0.3s'
+	},
+	videoLoaded: {
+		opacity: 1
+	},
 	image: {
 		display: 'block', // removes browser default gutter
 		height: 'auto',
@@ -1469,7 +1525,8 @@ var defaultStyles = {
 
 		// opacity animation to make spinner appear with delay
 		opacity: 0,
-		transition: 'opacity 0.3s'
+		transition: 'opacity 0.3s',
+		'pointer-events': 'none'
 	},
 	spinnerActive: {
 		opacity: 1

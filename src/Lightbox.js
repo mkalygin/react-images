@@ -87,7 +87,9 @@ class Lightbox extends Component {
 		// preload current image
 		if (this.props.currentImage !== nextProps.currentImage || !this.props.isOpen && nextProps.isOpen) {
 			const img = this.preloadImage(nextProps.currentImage, this.handleImageLoaded);
-			this.setState({ imageLoaded: img.complete });
+			if (img) {
+				this.setState({ imageLoaded: img.complete });
+			}
 		}
 
 		// add/remove event listeners
@@ -113,17 +115,19 @@ class Lightbox extends Component {
 
 		if (!data) return;
 
-		const img = new Image();
-		const sourceSet = normalizeSourceSet(data);
+		if (data.src) {
+			const img = new Image();
+			const sourceSet = normalizeSourceSet(data);
 
-		// TODO: add error handling for missing images
-		img.onerror = onload;
-		img.onload = onload;
-		img.src = data.src;
+			// TODO: add error handling for missing images
+			img.onerror = onload;
+			img.onload = onload;
+			img.src = data.src;
 
-		if (sourceSet) img.srcset = sourceSet;
+			if (sourceSet) img.srcset = sourceSet;
 
-		return img;
+			return img;
+		}
 	}
 	gotoNext (event) {
 		const { currentImage, images } = this.props;
@@ -150,6 +154,9 @@ class Lightbox extends Component {
 		}
 
 		this.props.onClickPrev();
+	}
+	getYoutubeLink (id) {
+		return `//www.youtube.com/embed/${id}?fs=0&modestbranding=1&rel=0&showinfo=0`;
 	}
 	closeBackdrop (event) {
 		// make sure event only happens if they click the backdrop
@@ -244,19 +251,13 @@ class Lightbox extends Component {
 			</Container>
 		);
 	}
-	renderImages () {
+	renderImage(image) {
+		const { imageLoaded } = this.state;
 		const {
-			currentImage,
-			images,
 			onClickImage,
 			showThumbnails,
 		} = this.props;
 
-		const { imageLoaded } = this.state;
-
-		if (!images || !images.length) return null;
-
-		const image = images[currentImage];
 		const sourceSet = normalizeSourceSet(image);
 		const sizes = sourceSet ? '100vw' : null;
 
@@ -265,24 +266,69 @@ class Lightbox extends Component {
 			+ (this.theme.container.gutter.vertical)}px`;
 
 		return (
+			<img
+				className={css(this.classes.image, imageLoaded && this.classes.imageLoaded)}
+				onClick={onClickImage}
+				sizes={sizes}
+				alt={image.alt}
+				src={image.src}
+				srcSet={sourceSet}
+				style={{
+					cursor: onClickImage ? 'pointer' : 'auto',
+					maxHeight: `calc(100vh - ${heightOffset})`,
+				}}
+			/>
+		);
+	}
+	renderVideo(image) {
+		const { imageLoaded } = this.state;
+		const {
+			onClickImage,
+			showThumbnails,
+		} = this.props;
+
+		const thumbnailsSize = showThumbnails ? this.theme.thumbnail.size : 0;
+		const heightOffset = `${this.theme.header.height + this.theme.footer.height + thumbnailsSize
+			+ (this.theme.container.gutter.vertical)}px`;
+
+		return (
+			<iframe
+				className={css(this.classes.video, imageLoaded && this.classes.videoLoaded)}
+				src={this.getYoutubeLink(image.youtubeVideoId)}
+				frameBorder="0"
+				onLoad={this.handleImageLoaded}
+				style={{
+					cursor: onClickImage ? 'pointer' : 'auto',
+					height: `calc(100vh - ${heightOffset})`,
+					width: `calc((100vh - ${heightOffset}) * 16 / 9)`,
+				}}
+			></iframe>
+		);
+	}
+	renderImages () {
+		const {
+			currentImage,
+			images,
+			showThumbnails,
+		} = this.props;
+
+		if (!images || !images.length) return null;
+
+		const image = images[currentImage];
+
+		return (
 			<figure className={css(this.classes.figure)}>
 				{/*
 					Re-implement when react warning "unknown props"
 					https://fb.me/react-unknown-prop is resolved
 					<Swipeable onSwipedLeft={this.gotoNext} onSwipedRight={this.gotoPrev} />
 				*/}
-				<img
-					className={css(this.classes.image, imageLoaded && this.classes.imageLoaded)}
-					onClick={onClickImage}
-					sizes={sizes}
-					alt={image.alt}
-					src={image.src}
-					srcSet={sourceSet}
-					style={{
-						cursor: onClickImage ? 'pointer' : 'auto',
-						maxHeight: `calc(100vh - ${heightOffset})`,
-					}}
-				/>
+				{image.src &&
+					this.renderImage(image)
+				}
+				{image.youtubeVideoId &&
+					this.renderVideo(image)
+				}
 			</figure>
 		);
 	}
@@ -374,7 +420,8 @@ Lightbox.propTypes = {
 	imageCountSeparator: PropTypes.string,
 	images: PropTypes.arrayOf(
 		PropTypes.shape({
-			src: PropTypes.string.isRequired,
+			src: PropTypes.string,
+			youtubeVideoId: PropTypes.string,
 			srcSet: PropTypes.array,
 			caption: PropTypes.oneOfType([PropTypes.string, PropTypes.element]),
 			thumbnail: PropTypes.string,
@@ -429,6 +476,18 @@ const defaultStyles = {
 	figure: {
 		margin: 0, // remove browser default
 	},
+	video: {
+		display: 'block',
+		maxWidth: '100%',
+		maxHeight: 'calc(100vw * 9 / 16)',
+
+		// opacity animation on video load
+		opacity: 0,
+		transition: 'opacity 0.3s',
+	},
+	videoLoaded: {
+		opacity: 1,
+	},
 	image: {
 		display: 'block', // removes browser default gutter
 		height: 'auto',
@@ -455,6 +514,7 @@ const defaultStyles = {
 		// opacity animation to make spinner appear with delay
 		opacity: 0,
 		transition: 'opacity 0.3s',
+		'pointer-events': 'none',
 	},
 	spinnerActive: {
 		opacity: 1,

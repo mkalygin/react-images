@@ -64,7 +64,8 @@
 							<pre><code>&lt;Lightbox
   images={[
     { src: '../images/photo-1.jpg' },
-    { src: '../images/photo-2.jpg' }
+    { src: '../images/photo-2.jpg' },
+    { youtubeVideoId: 'DSehQsYU9h4' },
   ]}
   isOpen={this.state.lightboxIsOpen}
   onClickPrev={this.gotoPrevLightboxImage}
@@ -220,7 +221,13 @@
 											<td align="left">src</td>
 											<td align="left">string</td>
 											<td align="left">undefined</td>
-											<td align="left">Required. The primary image path</td>
+											<td align="left">The primary image path. Either it or <code>youtubeVideoId</code> are required.</td>
+										</tr>
+										<tr>
+											<td align="left">youtubeVideoId</td>
+											<td align="left">string</td>
+											<td align="left">undefined</td>
+											<td align="left">Youtube ID of video to embed. Either it or <code>src</code> are required.</td>
 										</tr>
 										<tr>
 											<td align="left">srcset</td>

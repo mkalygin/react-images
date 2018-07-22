@@ -2,6 +2,7 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { css, StyleSheet } from 'aphrodite';
 import ScrollLock from 'react-scrolllock';
+import Plyr from 'react-plyr';
 
 import defaultTheme from './theme';
 import Arrow from './components/Arrow';
@@ -87,7 +88,7 @@ class Lightbox extends Component {
 		// preload current image
 		if (this.props.currentImage !== nextProps.currentImage || !this.props.isOpen && nextProps.isOpen) {
 			const img = this.preloadImage(nextProps.currentImage, this.handleImageLoaded);
-			this.setState({ imageLoaded: img.complete });
+			this.setState({ imageLoaded: img ? img.complete : false });
 		}
 
 		// add/remove event listeners
@@ -111,7 +112,7 @@ class Lightbox extends Component {
 	preloadImage (idx, onload) {
 		const data = this.props.images[idx];
 
-		if (!data) return;
+		if (!data || (!data.src && !data.srcSet && !data.srcset)) return;
 
 		const img = new Image();
 		const sourceSet = normalizeSourceSet(data);
@@ -229,34 +230,26 @@ class Lightbox extends Component {
 				onClick={backdropClosesModal && this.closeBackdrop}
 				onTouchEnd={backdropClosesModal && this.closeBackdrop}
 			>
-				<div>
-					<div className={css(this.classes.content)} style={{ marginBottom: offsetThumbnails, maxWidth: width }}>
-						{imageLoaded && this.renderHeader()}
-						{this.renderImages()}
-						{this.renderSpinner()}
-						{imageLoaded && this.renderFooter()}
-					</div>
-					{imageLoaded && this.renderThumbnails()}
-					{imageLoaded && this.renderArrowPrev()}
-					{imageLoaded && this.renderArrowNext()}
-					{this.props.preventScroll && <ScrollLock />}
+				<div className={css(this.classes.content)} style={{ marginBottom: offsetThumbnails, maxWidth: width }}>
+					{imageLoaded && this.renderHeader()}
+					{this.renderImages()}
+					{this.renderSpinner()}
+					{imageLoaded && this.renderFooter()}
 				</div>
+				{imageLoaded && this.renderThumbnails()}
+				{imageLoaded && this.renderArrowPrev()}
+				{imageLoaded && this.renderArrowNext()}
+				{this.props.preventScroll && <ScrollLock />}
 			</Container>
 		);
 	}
-	renderImages () {
+	renderImage (image) {
+		const { imageLoaded } = this.state;
 		const {
-			currentImage,
-			images,
 			onClickImage,
 			showThumbnails,
 		} = this.props;
 
-		const { imageLoaded } = this.state;
-
-		if (!images || !images.length) return null;
-
-		const image = images[currentImage];
 		const sourceSet = normalizeSourceSet(image);
 		const sizes = sourceSet ? '100vw' : null;
 
@@ -265,24 +258,49 @@ class Lightbox extends Component {
 			+ (this.theme.container.gutter.vertical)}px`;
 
 		return (
+			<img
+				className={css(this.classes.image, imageLoaded && this.classes.imageLoaded)}
+				onClick={onClickImage}
+				sizes={sizes}
+				alt={image.alt}
+				src={image.src}
+				srcSet={sourceSet}
+				style={{
+					cursor: onClickImage ? 'pointer' : 'auto',
+					maxHeight: `calc(100vh - ${heightOffset})`,
+				}}
+			/>
+		);
+	}
+	renderVideo ({ youtubeVideoId }) {
+		return (
+			<Plyr
+				provider="youtube"
+				videoId={youtubeVideoId}
+				onReady={this.handleImageLoaded}
+				{...this.props.videoPlayerConfig}
+			/>
+		);
+	}
+	renderImages () {
+		const {
+			currentImage,
+			images,
+		} = this.props;
+
+		if (!images || !images.length) return null;
+
+		const image = images[currentImage];
+
+		return (
 			<figure className={css(this.classes.figure)}>
 				{/*
 					Re-implement when react warning "unknown props"
 					https://fb.me/react-unknown-prop is resolved
 					<Swipeable onSwipedLeft={this.gotoNext} onSwipedRight={this.gotoPrev} />
 				*/}
-				<img
-					className={css(this.classes.image, imageLoaded && this.classes.imageLoaded)}
-					onClick={onClickImage}
-					sizes={sizes}
-					alt={image.alt}
-					src={image.src}
-					srcSet={sourceSet}
-					style={{
-						cursor: onClickImage ? 'pointer' : 'auto',
-						maxHeight: `calc(100vh - ${heightOffset})`,
-					}}
-				/>
+				{image.src && this.renderImage(image)}
+				{image.youtubeVideoId && this.renderVideo(image)}
 			</figure>
 		);
 	}
@@ -374,7 +392,8 @@ Lightbox.propTypes = {
 	imageCountSeparator: PropTypes.string,
 	images: PropTypes.arrayOf(
 		PropTypes.shape({
-			src: PropTypes.string.isRequired,
+			src: PropTypes.string,
+			youtubeVideoId: PropTypes.string,
 			srcSet: PropTypes.array,
 			caption: PropTypes.oneOfType([PropTypes.string, PropTypes.element]),
 			thumbnail: PropTypes.string,
@@ -397,6 +416,7 @@ Lightbox.propTypes = {
 	spinnerSize: PropTypes.number,
 	theme: PropTypes.object,
 	thumbnailOffset: PropTypes.number,
+	videoPlayerConfig: PropTypes.object,
 	width: PropTypes.number,
 };
 Lightbox.defaultProps = {
@@ -416,6 +436,7 @@ Lightbox.defaultProps = {
 	spinnerSize: 100,
 	theme: {},
 	thumbnailOffset: 2,
+	videoPlayerConfig: {},
 	width: 1024,
 };
 Lightbox.childContextTypes = {
@@ -425,6 +446,7 @@ Lightbox.childContextTypes = {
 const defaultStyles = {
 	content: {
 		position: 'relative',
+		width: '100%',
 	},
 	figure: {
 		margin: 0, // remove browser default

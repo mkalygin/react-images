@@ -3,6 +3,7 @@ import { render } from 'react-dom';
 import Gallery from './components/Gallery';
 import CustomSpinner from './components/Spinner';
 import './example.less';
+import './video-player.scss';
 
 function makeUnsplashSrc (id) {
 	return `https://images.unsplash.com/photo-${id}?dpr=2&auto=format&w=1024&h=1024`;
@@ -16,6 +17,9 @@ function makeUnsplashThumbnail (id, orientation = 'landscape') {
 		: 'w=240&h=159';
 
 	return `https://images.unsplash.com/photo-${id}?dpr=2&auto=format&crop=faces&fit=crop&${dimensions}`;
+}
+function makeYoutubeThumbnail (id) {
+	return `http://img.youtube.com/vi/${id}/0.jpg`;
 }
 
 // Unsplash images from the "Spirit Animals" collection
@@ -47,6 +51,13 @@ const THUMBNAIL_IMAGES = [
 	{ id: '1470688090067-6d429c0b2600', caption: 'Photo by Ján Jakub Naništa', orientation: 'landscape' }, // https://unsplash.com/photos/xqjO-lx39B4 (Scottish Highland Cow)
 	{ id: '1470742292565-de43c4b02b57', caption: 'Photo by Eric Knoll', orientation: 'landscape' }, // https://unsplash.com/photos/DmOCkOnx-MQ (Cheetah)
 	// https://unsplash.com/photos/NUMlxTPsznM coyote?
+];
+const YOUTUBE_VIDEOS = [
+	{ id: 'DSehQsYU9h4', caption: 'Red Pandas are Having Snow Much Fun - Cincinnati Zoo', orientation: 'landscape', useForDemo: true },
+	{ id: 'X0-EWfaohO8', caption: 'Panda Cub at the Toronto Zoo', orientation: 'landscape', useForDemo: true },
+	{ id: 'q625P-DBRd4', caption: 'Cute And Funny Hedgehog Videos Compilation 2017 - Funny Animals', orientation: 'landscape', useForDemo: true },
+	{ id: 'PYOSKYWg-5E', caption: 'Owl - A Funny Owls And Cute Owls Compilation ', orientation: 'landscape', useForDemo: true },
+	{ id: 'hbafShGaYgM', caption: 'Funniest Raccoon Video Compilation of 2017 | Funny Pet Videos', orientation: 'landscape', useForDemo: true },
 ];
 
 const theme = {
@@ -106,7 +117,7 @@ const theme = {
 render(
 	<div>
 		<div style={{ marginBottom: 40 }}>
-			<p>Photos courtesy of <a href="https://unsplash.com/" target="_blank">Unsplash</a>. Use your keyboard to navigate <kbd>left</kbd> <kbd>right</kbd> <kbd>esc</kbd> &mdash; Also, try resizing your browser window.</p>
+			<p>Photos courtesy of <a href="https://unsplash.com/" target="_blank">Unsplash</a> and videos from <a href="https://youtube.com/" target="_blank">YouTube</a>. Use your keyboard to navigate <kbd>left</kbd> <kbd>right</kbd> <kbd>esc</kbd> &mdash; Also, try resizing your browser window.</p>
 		</div>
 		<h3>Default Options</h3>
 		<Gallery images={DEFAULT_IMAGES.map(({ caption, id, orientation, useForDemo }) => ({
@@ -157,7 +168,16 @@ render(
 			spinnerColor={'#D40000'}
 			spinnerSize={150}
 			showThumbnails
-	/>
+		/>
+
+		<h3>YouTube Videos</h3>
+		<Gallery images={YOUTUBE_VIDEOS.map(({ caption, id, orientation, useForDemo }) => ({
+			youtubeVideoId: id,
+			thumbnail: makeYoutubeThumbnail(id),
+			caption,
+			orientation,
+			useForDemo,
+		}))} />
 	</div>,
 	document.getElementById('example')
 );

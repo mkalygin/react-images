@@ -201,6 +201,12 @@
 											<td align="left">1024</td>
 											<td align="left">Maximum width of the carousel; defaults to 1024px</td>
 										</tr>
+										<tr>
+											<td align="left">videoPlayerConfig</td>
+											<td align="left">object</td>
+											<td align="left">{}</td>
+											<td align="left">Config for <a href="https://github.com/xDae/react-plyr">react-plyr</a> video player</td>
+										</tr>
 									</tbody>
 								</table>
 							</div>
@@ -220,7 +226,13 @@
 											<td align="left">src</td>
 											<td align="left">string</td>
 											<td align="left">undefined</td>
-											<td align="left">Required. The primary image path</td>
+											<td align="left">The primary image path. Either it or <code>youtubeVideoId</code> are required.</td>
+										</tr>
+										<tr>
+											<td align="left">youtubeVideoId</td>
+											<td align="left">string</td>
+											<td align="left">undefined</td>
+											<td align="left">Youtube ID of video to embed. Either it or <code>src</code> are required.</td>
 										</tr>
 										<tr>
 											<td align="left">srcset</td>

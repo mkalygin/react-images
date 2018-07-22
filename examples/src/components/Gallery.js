@@ -134,6 +134,7 @@ const classes = StyleSheet.create({
 		paddingRight: gutter.small,
 		paddingBottom: gutter.small,
 		overflow: 'hidden',
+		cursor: 'pointer',
 
 		'@media (min-width: 500px)': {
 			paddingRight: gutter.large,

@@ -1,0 +1,7 @@
+$plyr-color-main: #437fdc;
+
+@import 'node_modules/plyr/src/sass/plyr';
+
+.plyr__video-wrapper {
+  background-color: transparent !important;
+}

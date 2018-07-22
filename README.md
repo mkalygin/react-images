@@ -111,12 +111,14 @@ spinner | func | DefaultSpinner | Spinner component class
 spinnerColor | string | 'white' | Color of spinner
 spinnerSize | number | 100 | Size of spinner
 preventScroll | bool | true | Determines whether scrolling is prevented via [react-scrolllock](https://github.com/jossmac/react-scrolllock)
+videoPlayerConfig | object | {} | Config for [react-plyr](https://github.com/xDae/react-plyr) video player
 
 ## Images object
 
 Property	|	Type		|	Default		|	Description
 :-----------------------|:--------------|:--------------|:--------------------------------
-src  | string | undefined | Required
+src  | string | undefined | Either it or `youtubeVideoId` are required
+youtubeVideoId  | string | undefined | Either it or `src` are required
 srcSet  | array of strings | undefined | Optional
 caption  | string | undefined | Optional
 alt  | string | undefined | Optional

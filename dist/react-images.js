@@ -1156,7 +1156,7 @@ var Lightbox = function (_Component) {
 	}, {
 		key: 'getYoutubeLink',
 		value: function getYoutubeLink(id) {
-			return '//www.youtube.com/embed/' + id + '?fs=0&modestbranding=1&rel=0&showinfo=0';
+			return '//www.youtube.com/embed/' + id + '?fs=0&modestbranding=1&rel=0&showinfo=0&vq=hd720';
 		}
 	}, {
 		key: 'closeBackdrop',
@@ -1248,20 +1248,16 @@ var Lightbox = function (_Component) {
 				},
 				React__default.createElement(
 					'div',
-					null,
-					React__default.createElement(
-						'div',
-						{ className: aphrodite.css(this.classes.content), style: { marginBottom: offsetThumbnails, maxWidth: width } },
-						imageLoaded && this.renderHeader(),
-						this.renderImages(),
-						this.renderSpinner(),
-						imageLoaded && this.renderFooter()
-					),
-					imageLoaded && this.renderThumbnails(),
-					imageLoaded && this.renderArrowPrev(),
-					imageLoaded && this.renderArrowNext(),
-					this.props.preventScroll && React__default.createElement(ScrollLock, null)
-				)
+					{ className: aphrodite.css(this.classes.content), style: { marginBottom: offsetThumbnails, maxWidth: width } },
+					imageLoaded && this.renderHeader(),
+					this.renderImages(),
+					this.renderSpinner(),
+					imageLoaded && this.renderFooter()
+				),
+				imageLoaded && this.renderThumbnails(),
+				imageLoaded && this.renderArrowPrev(),
+				imageLoaded && this.renderArrowNext(),
+				this.props.preventScroll && React__default.createElement(ScrollLock, null)
 			);
 		}
 	}, {
@@ -1304,17 +1300,23 @@ var Lightbox = function (_Component) {
 			var thumbnailsSize = showThumbnails ? this.theme.thumbnail.size : 0;
 			var heightOffset = this.theme.header.height + this.theme.footer.height + thumbnailsSize + this.theme.container.gutter.vertical + 'px';
 
-			return React__default.createElement('iframe', {
-				className: aphrodite.css(this.classes.video, imageLoaded && this.classes.videoLoaded),
-				src: this.getYoutubeLink(image.youtubeVideoId),
-				frameBorder: '0',
-				onLoad: this.handleImageLoaded,
-				style: {
-					cursor: onClickImage ? 'pointer' : 'auto',
-					height: 'calc(100vh - ' + heightOffset + ')',
-					width: 'calc((100vh - ' + heightOffset + ') * 16 / 9)'
-				}
-			});
+			return React__default.createElement(
+				'div',
+				{
+					className: aphrodite.css(this.classes.videoContainer),
+					style: {
+						width: 'calc((100vh - ' + heightOffset + ') * 16 / 9)'
+					}
+				},
+				React__default.createElement('div', { className: aphrodite.css(this.classes.videoDummyElement) }),
+				React__default.createElement('iframe', {
+					className: aphrodite.css(this.classes.video, imageLoaded && this.classes.videoLoaded),
+					src: this.getYoutubeLink(image.youtubeVideoId),
+					frameBorder: '0',
+					onLoad: this.handleImageLoaded,
+					style: { cursor: onClickImage ? 'pointer' : 'auto' }
+				})
+			);
 		}
 	}, {
 		key: 'renderImages',
@@ -1488,10 +1490,23 @@ var defaultStyles = {
 	figure: {
 		margin: 0 // remove browser default
 	},
-	video: {
+	videoContainer: {
 		display: 'block',
-		maxWidth: '100%',
-		maxHeight: 'calc(100vw * 9 / 16)',
+		'max-width': '100%',
+		position: 'relative',
+		margin: '0 auto',
+		overflow: 'hidden'
+	},
+	videoDummyElement: {
+		display: 'block',
+		'margin-top': '56.25%'
+	},
+	video: {
+		width: '100%',
+		height: '100%',
+		position: 'absolute',
+		top: 0,
+		left: 0,
 
 		// opacity animation on video load
 		opacity: 0,

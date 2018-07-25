@@ -156,7 +156,7 @@ class Lightbox extends Component {
 		this.props.onClickPrev();
 	}
 	getYoutubeLink (id) {
-		return `//www.youtube.com/embed/${id}?fs=0&modestbranding=1&rel=0&showinfo=0`;
+		return `//www.youtube.com/embed/${id}?fs=0&modestbranding=1&rel=0&showinfo=0&vq=hd720`;
 	}
 	closeBackdrop (event) {
 		// make sure event only happens if they click the backdrop
@@ -236,18 +236,16 @@ class Lightbox extends Component {
 				onClick={backdropClosesModal && this.closeBackdrop}
 				onTouchEnd={backdropClosesModal && this.closeBackdrop}
 			>
-				<div>
-					<div className={css(this.classes.content)} style={{ marginBottom: offsetThumbnails, maxWidth: width }}>
-						{imageLoaded && this.renderHeader()}
-						{this.renderImages()}
-						{this.renderSpinner()}
-						{imageLoaded && this.renderFooter()}
-					</div>
-					{imageLoaded && this.renderThumbnails()}
-					{imageLoaded && this.renderArrowPrev()}
-					{imageLoaded && this.renderArrowNext()}
-					{this.props.preventScroll && <ScrollLock />}
+				<div className={css(this.classes.content)} style={{ marginBottom: offsetThumbnails, maxWidth: width }}>
+					{imageLoaded && this.renderHeader()}
+					{this.renderImages()}
+					{this.renderSpinner()}
+					{imageLoaded && this.renderFooter()}
 				</div>
+				{imageLoaded && this.renderThumbnails()}
+				{imageLoaded && this.renderArrowPrev()}
+				{imageLoaded && this.renderArrowNext()}
+				{this.props.preventScroll && <ScrollLock />}
 			</Container>
 		);
 	}
@@ -292,17 +290,21 @@ class Lightbox extends Component {
 			+ (this.theme.container.gutter.vertical)}px`;
 
 		return (
-			<iframe
-				className={css(this.classes.video, imageLoaded && this.classes.videoLoaded)}
-				src={this.getYoutubeLink(image.youtubeVideoId)}
-				frameBorder="0"
-				onLoad={this.handleImageLoaded}
+			<div
+				className={css(this.classes.videoContainer)}
 				style={{
-					cursor: onClickImage ? 'pointer' : 'auto',
-					height: `calc(100vh - ${heightOffset})`,
 					width: `calc((100vh - ${heightOffset}) * 16 / 9)`,
 				}}
-			></iframe>
+			>
+				<div className={css(this.classes.videoDummyElement)}/>
+				<iframe
+					className={css(this.classes.video, imageLoaded && this.classes.videoLoaded)}
+					src={this.getYoutubeLink(image.youtubeVideoId)}
+					frameBorder="0"
+					onLoad={this.handleImageLoaded}
+					style={{ cursor: onClickImage ? 'pointer' : 'auto' }}
+				></iframe>
+			</div>
 		);
 	}
 	renderImages () {
@@ -476,10 +478,23 @@ const defaultStyles = {
 	figure: {
 		margin: 0, // remove browser default
 	},
-	video: {
+	videoContainer: {
 		display: 'block',
-		maxWidth: '100%',
-		maxHeight: 'calc(100vw * 9 / 16)',
+		'max-width': '100%',
+		position: 'relative',
+		margin: '0 auto',
+		overflow: 'hidden',
+	},
+	videoDummyElement: {
+		display: 'block',
+		'margin-top': '56.25%',
+	},
+	video: {
+		width: '100%',
+		height: '100%',
+		position: 'absolute',
+		top: 0,
+		left: 0,
 
 		// opacity animation on video load
 		opacity: 0,
